@@ -189,7 +189,7 @@ namespace XSwiftBus
         bool isCom2Receiving() const { return this->getCom2Power() && this->getCom2Listening(); }
 
         //! Is COM2 transmitting?
-        bool isCom2Transmitting() const { return this->getCom2Power() && this->isCom2Transmitting(); }
+        bool isCom2Transmitting() const { return this->getCom2Power() && this->isCom2Selected(); }
 
         //! Get the current transponder code in decimal
         int getTransponderCode() const { return m_xpdrCode.get(); }

@@ -883,6 +883,13 @@ namespace BlackGui
         c = connect(a, &QAction::triggered, this, &CGuiApplication::windowToBack);
         Q_ASSERT_X(c, Q_FUNC_INFO, "connect failed");
 
+        a = menu.addAction("Toggle normal or minimized");
+        c = connect(a, &QAction::triggered, this, [ = ]()
+        {
+            if (!w) { return; }
+            this->windowMinimizeNormalToggle();
+        });
+        Q_ASSERT_X(c, Q_FUNC_INFO, "Connect failed");
         Q_UNUSED(c)
     }
 
@@ -1183,13 +1190,15 @@ namespace BlackGui
         w->raise();          // bring window from minimized state on OSX
 
         // In order to show also on top if another window is (permanent) on top
+        /**
         if (!CGuiUtility::staysOnTop(w))
         {
             CGuiUtility::stayOnTop(true, w);
             emit this->alwaysOnTop(true);
         }
+        **/
 
-        // w->activateWindow(); // bring window to front/unminimize on windows
+        w->activateWindow(); // bring window to front/unminimize on windows
     }
 
     void CGuiApplication::windowToBack()
@@ -1224,6 +1233,24 @@ namespace BlackGui
         {
             this->windowToFront();
         }
+    }
+
+    void CGuiApplication::windowMinimizeNormalToggle()
+    {
+        if (this->isShuttingDown()) { return; }
+        QMainWindow *w = sGui->mainApplicationWindow();
+        if (!w)  { return; }
+        if (m_normalizeMinimize)
+        {
+            w->showMinimized();
+        }
+        else
+        {
+            // trick here is to minimize first and the normalize from minimized state
+            w->showMinimized();
+            w->showNormal();
+        }
+        m_normalizeMinimize = !m_normalizeMinimize;
     }
 
     void CGuiApplication::triggerNewVersionCheck(int delayedMs)

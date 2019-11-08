@@ -14,6 +14,7 @@
 #include "blacksound/audioutilities.h"
 #include "blackmisc/audio/audiodeviceinfolist.h"
 #include "blackmisc/threadutils.h"
+#include "blackmisc/stringutils.h"
 #include "blackmisc/verify.h"
 
 #ifdef Q_OS_WIN
@@ -1039,7 +1040,6 @@ namespace BlackCore
 
                     if (it != m_aliasedStations.end())
                     {
-                        roundedFrequencyHz = it->frequencyHz; // we use this frequency
                         if (sApp->getIContextNetwork())
                         {
                             // Get the callsign for this frequency and fuzzy compare with our alias station
@@ -1049,29 +1049,37 @@ namespace BlackCore
                             const CAtcStationList matchingAtcStations = sApp->getIContextNetwork()->getOnlineStationsForFrequency(f, spacing);
                             const CAtcStation closest = matchingAtcStations.findClosest(1, sApp->getIContextOwnAircraft()->getOwnAircraftSituation().getPosition()).frontOrDefault();
 
-                            if (fuzzyMatchCallSign(it->name, closest.getCallsign().asString()))
+                            if (fuzzyMatchCallsign(it->name, closest.getCallsign().asString()))
                             {
                                 // this is how it should be
-                                CLogMessage(this).debug(u"%1 Aliasing %2Hz [VHF] to %3Hz [HF]")  << closest.getCallsign() << frequencyHz << it->frequencyHz;
+                                roundedFrequencyHz = it->frequencyHz;
+                                CLogMessage(this).debug(u"Aliasing '%1' %2Hz [VHF] to %3Hz [HF]")  << closest.getCallsign() << frequencyHz << it->frequencyHz;
                             }
                             else
                             {
                                 // Ups!
-                                CLogMessage(this).debug(u"Aliasing %1Hz [VHF] to %2Hz [HF], BUT station NOT found!")  << frequencyHz << it->frequencyHz;
+                                CLogMessage(this).debug(u"Station '%1' NOT found! Using original frequency %2Hz")  << it->name << roundedFrequencyHz;
                             }
                         }
                         else
                         {
-                            // without contexts
-                            CLogMessage(this).debug(u"Aliasing %1Hz [VHF] to %2Hz [HF]")  << frequencyHz << it->frequencyHz;
+                            // without contexts always use HF frequency if found
+                            roundedFrequencyHz = it->frequencyHz; // we use this frequency
+                            CLogMessage(this).debug(u"Aliasing %1Hz [VHF] to %2Hz [HF] (no context)")  << frequencyHz << it->frequencyHz;
                         }
                     }
                 }
                 return roundedFrequencyHz;
             }
 
-            bool CAfvClient::fuzzyMatchCallSign(const QString &callsign, const QString &compareTo) const
+            bool CAfvClient::fuzzyMatchCallsign(const QString &callsign, const QString &compareTo) const
             {
+                if (callsign.isEmpty() || compareTo.isEmpty()) { return false; } // empty callsigns should NOT match
+                const QStringView cs = removeChars(callsign.toUpper(),  [](QChar c) { return !c.isLetterOrNumber(); });
+                const QStringView cp = removeChars(compareTo.toUpper(), [](QChar c) { return !c.isLetterOrNumber(); });
+                return cs == cp;
+
+                /**
                 QString prefixA;
                 QString suffixA;
                 QString prefixB;
@@ -1079,6 +1087,7 @@ namespace BlackCore
                 this->getPrefixSuffix(callsign, prefixA, suffixA);
                 this->getPrefixSuffix(compareTo, prefixB, suffixB);
                 return (prefixA == prefixB) && (suffixA == suffixB);
+                **/
             }
 
             void CAfvClient::getPrefixSuffix(const QString &callsign, QString &prefix, QString &suffix) const

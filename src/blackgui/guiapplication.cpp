@@ -1189,8 +1189,7 @@ namespace BlackGui
         w->showNormal();     // bring window to top on OSX
         w->raise();          // bring window from minimized state on OSX
 
-        // In order to show also on top if another window is (permanent) on top
-        /**
+        /** In order to show also on top if another window is (permanent) on top
         if (!CGuiUtility::staysOnTop(w))
         {
             CGuiUtility::stayOnTop(true, w);

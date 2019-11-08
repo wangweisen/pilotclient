@@ -1075,11 +1075,7 @@ namespace BlackCore
             bool CAfvClient::fuzzyMatchCallsign(const QString &callsign, const QString &compareTo) const
             {
                 if (callsign.isEmpty() || compareTo.isEmpty()) { return false; } // empty callsigns should NOT match
-                const QStringView cs = removeChars(callsign.toUpper(),  [](QChar c) { return !c.isLetterOrNumber(); });
-                const QStringView cp = removeChars(compareTo.toUpper(), [](QChar c) { return !c.isLetterOrNumber(); });
-                return cs == cp;
 
-                /**
                 QString prefixA;
                 QString suffixA;
                 QString prefixB;
@@ -1087,15 +1083,16 @@ namespace BlackCore
                 this->getPrefixSuffix(callsign, prefixA, suffixA);
                 this->getPrefixSuffix(compareTo, prefixB, suffixB);
                 return (prefixA == prefixB) && (suffixA == suffixB);
-                **/
             }
 
             void CAfvClient::getPrefixSuffix(const QString &callsign, QString &prefix, QString &suffix) const
             {
-                QRegularExpression separator("[(-|_)]");
-                QStringList parts = callsign.split(separator);
-                prefix = parts.first();
-                suffix = parts.last();
+                thread_local const QRegularExpression separator("[(\\-|_)]");
+                const QStringList parts = callsign.split(separator);
+
+                // avoid issues if there are no parts, or only one
+                prefix = parts.size() > 0 ? parts.first() : QString();
+                suffix = parts.size() > 1 ? parts.last() :  QString();
             }
 
             quint16 CAfvClient::comUnitToTransceiverId(CComSystem::ComUnit comUnit)

@@ -15,6 +15,7 @@
 #include "blackcore/db/airportdatareader.h"
 #include "blackcore/db/icaodatareader.h"
 #include "blackcore/db/modeldatareader.h"
+
 #include "blackmisc/aviation/aircrafticaocode.h"
 #include "blackmisc/aviation/aircrafticaocodelist.h"
 #include "blackmisc/aviation/airlineicaocode.h"
@@ -83,7 +84,8 @@ namespace BlackCoreTest
     void CTestReaders::readIcaoData()
     {
         const CUrl url(sApp->getGlobalSetup().getDbIcaoReaderUrl());
-        qDebug() << "Reader URL" << url.toQString();
+        qDebug() << "Reader URL";
+
         if (!this->connectServer(url)) { QSKIP("Server not reachable."); return; }
         m_icaoReader->start();
         m_icaoReader->readInBackgroundThread(CEntityFlags::AllIcaoEntities, QDateTime());
@@ -185,6 +187,7 @@ namespace BlackCoreTest
 
     bool CTestReaders::connectServer(const CUrl &url)
     {
+
         QString m;
         if (CNetworkUtils::canConnect(url, m, 2500))
         {
@@ -207,7 +210,22 @@ namespace BlackCoreTest
 } // ns
 
 //! main
-BLACKTEST_APPLESS_MAIN(BlackCoreTest::CTestReaders);
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+    BLACKTEST_INIT(BlackCoreTest::CTestReaders)
+    CApplication a(CApplicationInfo::UnitTest);
+    a.addVatlibOptions();
+    const bool setup = a.parseAndSynchronizeSetup();
+    if (!setup) { qWarning() << "No setup loaded"; }
+    int r = EXIT_FAILURE;
+    if (a.start())
+    {
+        r = QTest::qExec(&to, args);
+    }
+    a.gracefulShutdown();
+    return r;
+}
 
 #include "testreaders.moc"
 

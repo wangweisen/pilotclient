@@ -4,3 +4,4 @@ SUBDIRS += \
     context \
     fsd \
     testconnectivity \
+    testreaders \

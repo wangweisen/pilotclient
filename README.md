@@ -24,7 +24,7 @@ Resources
 
 [:globe_with_meridians: Website](https://swift-project.org/)
 
-[:blue_book: User documentation](https://docs.swift-project.org/)
+[:green_book: User guide](https://docs.swift-project.org/)
 
 [:wave: Discord](https://discord.gg/R7Atd9A)
 
@@ -41,4 +41,6 @@ _swift_ is written in modern C++14 using the Qt framework.
 Pull requests should be made against the current active development branch,
 which is `develop/0.9.5`.
 
-[:blue_book: Developer documentation](https://docs.swift-project.org/dev/)
+[:blue_book: Developer guide](https://docs.swift-project.org/dev/)
+
+[:orange_book: API documentation](https://apidocs.swift-project.org/)
